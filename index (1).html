@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HSE Plan Simulator — سیمولاتور تدوین طرح HSE</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Vazirmatn',sans-serif;
+  direction:rtl;
+  background:#080c18;
+  color:#e2e8f0;
+  min-height:100vh;
+}
+
+/* ═══════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════ */
+.screen{display:none}
+.screen.active{display:flex;flex-direction:column;min-height:100vh}
+
+/* ═══════════════════════════════════════════
+   INTRO SCREEN
+═══════════════════════════════════════════ */
+#screen-intro{
+  align-items:center;
+  justify-content:center;
+  background:radial-gradient(ellipse at 30% 20%, rgba(0,180,255,.08) 0%, transparent 60%),
+             radial-gradient(ellipse at 70% 80%, rgba(120,60,255,.08) 0%, transparent 60%),
+             #080c18;
+  padding:2rem 1rem;
+}
+.intro-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  max-width:520px;width:100%;text-align:center;gap:1.2rem;
+}
+.logo{
+  width:110px;height:110px;border-radius:50%;
+  background:linear-gradient(135deg,#00b4ff,#7c3dff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.8rem;
+  box-shadow:0 0 60px rgba(0,180,255,.35);
+  animation:glow 3s ease-in-out infinite;
+}
+@keyframes glow{
+  0%,100%{box-shadow:0 0 60px rgba(0,180,255,.35)}
+  50%{box-shadow:0 0 100px rgba(0,180,255,.65)}
+}
+.intro-title{
+  font-size:2.2rem;font-weight:800;
+  background:linear-gradient(135deg,#00b4ff,#7c3dff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.intro-sub{font-size:.9rem;color:#64748b;line-height:1.7}
+.std-row{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
+.std{
+  background:rgba(0,180,255,.1);border:1px solid rgba(0,180,255,.25);
+  color:#38bdf8;padding:.25rem .75rem;border-radius:20px;font-size:.72rem;font-weight:700
+}
+.form-card{
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:20px;padding:1.8rem;width:100%;
+}
+.form-card h2{font-size:1.1rem;font-weight:700;color:#e2e8f0;margin-bottom:1.4rem;text-align:center}
+.inp-group{margin-bottom:1.1rem}
+.inp-group label{display:block;font-size:.82rem;color:#7dd3fc;margin-bottom:.45rem;font-weight:500}
+.inp-group input{
+  width:100%;background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;padding:.75rem 1rem;
+  color:#e2e8f0;font-family:'Vazirmatn',sans-serif;
+  font-size:.92rem;outline:none;transition:.2s;direction:rtl;
+}
+.inp-group input:focus{border-color:#00b4ff;background:rgba(0,180,255,.06)}
+.inp-group input::placeholder{color:#475569}
+.btn-start{
+  width:100%;background:linear-gradient(135deg,#00b4ff,#7c3dff);
+  border:none;border-radius:12px;padding:.9rem;
+  color:#fff;font-family:'Vazirmatn',sans-serif;
+  font-size:1rem;font-weight:700;cursor:pointer;
+  transition:.3s;margin-top:.3rem;
+}
+.btn-start:hover{opacity:.88;transform:translateY(-2px)}
+.btn-start:disabled{opacity:.38;cursor:not-allowed;transform:none}
+
+/* ═══════════════════════════════════════════
+   QUIZ SCREEN
+═══════════════════════════════════════════ */
+#screen-quiz{background:#080c18}
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(8,12,24,.95);
+  border-bottom:1px solid rgba(0,180,255,.15);
+  padding:.9rem 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(20px);
+  flex-wrap:wrap;gap:.5rem;
+}
+.topbar-left .t1{font-size:.95rem;font-weight:700;color:#00b4ff}
+.topbar-left .t2{font-size:.73rem;color:#475569;margin-top:2px}
+.prog-wrap{display:flex;align-items:center;gap:.6rem}
+.prog-label{font-size:.82rem;font-weight:700;color:#00b4ff}
+.prog-bar{width:130px;height:7px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#00b4ff,#7c3dff);border-radius:4px;transition:.5s}
+
+.quiz-body{display:flex;flex:1;overflow:hidden}
+
+/* sidebar */
+.sidebar{
+  width:210px;flex-shrink:0;
+  background:rgba(255,255,255,.018);
+  border-left:1px solid rgba(255,255,255,.06);
+  padding:1.2rem .9rem;
+  overflow-y:auto;
+}
+.sidebar-ttl{
+  font-size:.65rem;color:#334155;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:.8rem;
+}
+.sec-btn{
+  display:flex;align-items:center;gap:.55rem;
+  padding:.6rem .7rem;border-radius:10px;
+  cursor:pointer;transition:.18s;margin-bottom:.25rem;
+  border:1px solid transparent;
+}
+.sec-btn:hover{background:rgba(255,255,255,.04)}
+.sec-btn.active{background:rgba(0,180,255,.1);border-color:rgba(0,180,255,.22)}
+.sec-ic{font-size:1.05rem}
+.sec-name{font-size:.75rem;color:#94a3b8;font-weight:500;flex:1}
+.sec-btn.active .sec-name{color:#00b4ff}
+.sec-cnt{
+  font-size:.67rem;background:rgba(0,180,255,.15);
+  color:#38bdf8;padding:.08rem .38rem;border-radius:10px;
+}
+
+/* question panel */
+.q-panel{flex:1;overflow-y:auto;padding:1.8rem;max-height:calc(100vh - 60px)}
+.sec-header{display:flex;align-items:center;gap:.9rem;margin-bottom:1.8rem}
+.sec-header .ico{
+  width:46px;height:46px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(0,180,255,.18),rgba(124,61,255,.18));
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+}
+.sec-header h2{font-size:1.2rem;font-weight:700;color:#e2e8f0}
+.sec-header p{font-size:.75rem;color:#64748b;margin-top:2px}
+
+.q-card{
+  background:rgba(255,255,255,.025);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:14px;padding:1.4rem;margin-bottom:1.3rem;
+  transition:.25s;
+}
+.q-card.answered{border-color:rgba(0,180,255,.22)}
+.q-num{font-size:.68rem;color:#00b4ff;font-weight:700;margin-bottom:.55rem;opacity:.85}
+.q-text{font-size:.92rem;font-weight:600;color:#e2e8f0;margin-bottom:.8rem;line-height:1.75}
+.q-hint{font-size:.7rem;color:#334155;margin-bottom:.9rem}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:.55rem}
+.opt{
+  display:flex;align-items:center;gap:.55rem;
+  padding:.6rem .85rem;
+  background:rgba(255,255,255,.035);
+  border:1.5px solid rgba(255,255,255,.08);
+  border-radius:9px;cursor:pointer;transition:.18s;
+}
+.opt:hover{background:rgba(0,180,255,.06);border-color:rgba(0,180,255,.28)}
+.opt.sel{background:rgba(0,180,255,.12);border-color:#00b4ff}
+.chk{
+  width:17px;height:17px;border-radius:4px;
+  border:2px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:.18s;
+}
+.opt.sel .chk{background:#00b4ff;border-color:#00b4ff}
+.chk-tick{color:#080c18;font-size:.65rem;font-weight:900}
+.opt-lbl{font-size:.79rem;color:#94a3b8;line-height:1.4}
+.opt.sel .opt-lbl{color:#e2e8f0}
+
+/* nav */
+.nav-row{
+  display:flex;gap:.9rem;margin-top:1.8rem;padding-bottom:2rem;flex-wrap:wrap;
+}
+.btn-nav{
+  flex:1;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:11px;padding:.8rem;
+  color:#94a3b8;font-family:'Vazirmatn',sans-serif;
+  font-size:.88rem;font-weight:600;cursor:pointer;transition:.18s;
+  min-width:120px;
+}
+.btn-nav:hover{background:rgba(255,255,255,.09)}
+.btn-gen{
+  flex:2;background:linear-gradient(135deg,#00b4ff,#7c3dff);
+  border:none;border-radius:11px;padding:.8rem;
+  color:#fff;font-family:'Vazirmatn',sans-serif;
+  font-size:.95rem;font-weight:700;cursor:pointer;transition:.3s;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  min-width:200px;
+}
+.btn-gen:hover{opacity:.88;transform:translateY(-2px)}
+.btn-gen:disabled{opacity:.38;cursor:not-allowed;transform:none}
+.warn-box{
+  background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);
+  color:#fca5a5;padding:.9rem;border-radius:10px;
+  font-size:.82rem;text-align:center;margin-top:.8rem;
+}
+.err-box{
+  background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);
+  color:#fca5a5;padding:1rem 1.2rem;border-radius:10px;
+  font-size:.85rem;margin-top:.8rem;
+  display:flex;align-items:flex-start;gap:.7rem;flex-wrap:wrap;
+}
+.err-box .err-icon{font-size:1.2rem;flex-shrink:0}
+.err-box .err-msg{flex:1;line-height:1.7}
+.btn-retry{
+  background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.35);
+  border-radius:8px;padding:.45rem 1rem;
+  color:#fca5a5;font-family:'Vazirmatn',sans-serif;
+  font-size:.82rem;font-weight:600;cursor:pointer;
+  transition:.18s;white-space:nowrap;
+}
+.btn-retry:hover{background:rgba(239,68,68,.3)}
+
+/* ═══════════════════════════════════════════
+   GENERATING SCREEN
+═══════════════════════════════════════════ */
+#screen-gen{
+  align-items:center;justify-content:center;
+  background:#080c18;text-align:center;padding:2rem;gap:1.5rem;
+}
+.spin{
+  width:80px;height:80px;border-radius:50%;
+  border:4px solid rgba(0,180,255,.12);
+  border-top-color:#00b4ff;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+#screen-gen h2{font-size:1.35rem;font-weight:700;color:#e2e8f0}
+#screen-gen p{font-size:.88rem;color:#475569;max-width:440px;line-height:1.7}
+.step-list{
+  display:flex;flex-direction:column;gap:.6rem;
+  max-width:360px;width:100%;margin-top:.5rem;
+}
+.step-item{
+  display:flex;align-items:center;gap:.7rem;
+  background:rgba(255,255,255,.028);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:10px;padding:.65rem 1rem;
+  font-size:.8rem;color:#64748b;
+  transition:.4s;
+}
+.step-item.done{color:#34d399;border-color:rgba(52,211,153,.2)}
+.step-item.active{color:#00b4ff;border-color:rgba(0,180,255,.2)}
+.step-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* ═══════════════════════════════════════════
+   RESULT SCREEN
+═══════════════════════════════════════════ */
+#screen-result{
+  background:#080c18;
+  align-items:stretch;
+}
+.result-top{
+  background:rgba(255,255,255,.02);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  padding:1.5rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(20px);
+}
+.result-title-wrap .badge{
+  display:inline-flex;align-items:center;gap:.4rem;
+  background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25);
+  color:#34d399;padding:.25rem .9rem;border-radius:20px;
+  font-size:.75rem;font-weight:700;margin-bottom:.5rem;
+}
+.result-title-wrap h1{
+  font-size:1.4rem;font-weight:800;
+  background:linear-gradient(135deg,#00b4ff,#7c3dff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.result-actions{display:flex;gap:.7rem;flex-wrap:wrap}
+.btn-dl{
+  display:flex;align-items:center;gap:.55rem;
+  background:linear-gradient(135deg,#00c853,#00acc1);
+  border:none;border-radius:11px;padding:.75rem 1.4rem;
+  color:#fff;font-family:'Vazirmatn',sans-serif;
+  font-size:.88rem;font-weight:700;cursor:pointer;transition:.3s;
+}
+.btn-dl:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,200,83,.3)}
+.btn-restart{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  border-radius:11px;padding:.75rem 1.2rem;
+  color:#94a3b8;font-family:'Vazirmatn',sans-serif;
+  font-size:.88rem;font-weight:600;cursor:pointer;transition:.18s;
+}
+.btn-restart:hover{background:rgba(255,255,255,.1)}
+
+.result-body{
+  display:flex;flex:1;overflow:hidden;
+  max-height:calc(100vh - 100px);
+}
+
+/* stats sidebar */
+.stats-col{
+  width:200px;flex-shrink:0;
+  border-left:1px solid rgba(255,255,255,.06);
+  padding:1.4rem 1rem;
+  overflow-y:auto;
+  display:flex;flex-direction:column;gap:1rem;
+}
+.stat-card{
+  background:rgba(255,255,255,.025);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;padding:1rem;text-align:center;
+}
+.stat-num{font-size:2rem;font-weight:800;color:#00b4ff}
+.stat-lbl{font-size:.7rem;color:#475569;margin-top:.2rem}
+.meta-chip{
+  display:flex;align-items:center;gap:.5rem;
+  background:rgba(255,255,255,.025);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:10px;padding:.7rem;
+  font-size:.75rem;color:#64748b;
+}
+.meta-chip b{color:#94a3b8;font-weight:600}
+
+/* plan display */
+.plan-col{flex:1;overflow-y:auto;padding:2rem}
+.plan-content{
+  background:rgba(255,255,255,.022);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:2rem;
+  line-height:1.95;font-size:.88rem;color:#cbd5e1;
+  white-space:pre-wrap;
+  font-family:'Vazirmatn',sans-serif;
+}
+
+/* ═══════════════════════════════════════════
+   PRINT / PDF STYLES
+═══════════════════════════════════════════ */
+@media print{
+  body{background:#fff!important;color:#111!important}
+  #screen-intro,#screen-quiz,#screen-gen,
+  .result-top,.result-actions,.stats-col,
+  .btn-dl,.btn-restart{display:none!important}
+  #screen-result{display:block!important}
+  .result-body{display:block;max-height:none;overflow:visible}
+  .plan-col{padding:0;overflow:visible}
+  .plan-content{
+    background:#fff!important;color:#111!important;
+    border:none!important;padding:0;
+    font-size:11pt;line-height:1.8;
+  }
+  @page{margin:2cm;size:A4}
+  h1,h2,h3{page-break-after:avoid}
+  .print-header{display:block!important}
+}
+.print-header{
+  display:none;
+  text-align:center;margin-bottom:1.5rem;
+  border-bottom:2px solid #111;padding-bottom:1rem;
+}
+.print-header h1{font-size:16pt;font-weight:800;color:#111}
+.print-header p{font-size:10pt;color:#444;margin-top:.3rem}
+
+/* ═══════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════ */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1e293b;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#334155}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 1 — INTRO
+══════════════════════════════════════════ -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-wrap">
+    <div class="logo">🛡️</div>
+    <div class="intro-title">HSE Plan Simulator</div>
+    <div class="intro-sub">
+      سیمولاتور آموزشی تدوین طرح جامع ایمنی، بهداشت و محیط زیست<br>
+      ویژه دانشجویان رشته HSE
+    </div>
+    <div class="std-row">
+      <span class="std">OSHA</span>
+      <span class="std">NIOSH</span>
+      <span class="std">NFPA</span>
+      <span class="std">OGP</span>
+      <span class="std">ISO 45001</span>
+      <span class="std">ISO 14001</span>
+    </div>
+
+    <div class="form-card">
+      <h2>🏭 اطلاعات اولیه سازمان</h2>
+      <div class="inp-group">
+        <label>نام صنعت</label>
+        <input id="inp-industry" type="text" placeholder="مثال: پتروشیمی، بهداشت و درمان، گردشگری..."/>
+      </div>
+      <div class="inp-group">
+        <label>نام شرکت / سازمان</label>
+        <input id="inp-company" type="text" placeholder="نام شرکت یا سازمان..."/>
+      </div>
+      <div class="inp-group">
+        <label>نام دانشجو / ارزیاب</label>
+        <input id="inp-user" type="text" placeholder="نام و نام‌خانوادگی..."/>
+      </div>
+      <button class="btn-start" id="btn-go" disabled onclick="startQuiz()">
+        🚀 شروع پرسشنامه ۵۰ سوالی
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 2 — QUIZ
+══════════════════════════════════════════ -->
+<div id="screen-quiz" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="t1">🛡️ HSE Plan Simulator</div>
+      <div class="t2" id="topbar-info"></div>
+    </div>
+    <div class="prog-wrap">
+      <span class="prog-label" id="prog-label">0/50</span>
+      <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      <span class="prog-label" id="prog-pct">0%</span>
+    </div>
+  </div>
+
+  <div class="quiz-body">
+    <!-- sidebar -->
+    <div class="sidebar" id="sidebar"></div>
+    <!-- questions -->
+    <div class="q-panel" id="q-panel">
+      <!-- injected by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 3 — GENERATING
+══════════════════════════════════════════ -->
+<div id="screen-gen" class="screen">
+  <div class="spin"></div>
+  <h2>🤖 هوش مصنوعی در حال تدوین HSE Plan...</h2>
+  <p>داده‌های پرسشنامه در حال تحلیل است. بر اساس استانداردهای OSHA، NIOSH، NFPA، ISO 45001 طرح جامع شما آماده می‌شود.</p>
+  <div class="step-list" id="step-list">
+    <div class="step-item" id="st1"><div class="step-dot"></div>تحلیل خطرات شناسایی‌شده</div>
+    <div class="step-item" id="st2"><div class="step-dot"></div>ارزیابی سطح ریسک‌ها</div>
+    <div class="step-item" id="st3"><div class="step-dot"></div>تدوین خط‌مشی و اهداف</div>
+    <div class="step-item" id="st4"><div class="step-dot"></div>برنامه‌ریزی کنترل خطرات</div>
+    <div class="step-item" id="st5"><div class="step-dot"></div>نهایی‌سازی HSE Plan</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 4 — RESULT
+══════════════════════════════════════════ -->
+<div id="screen-result" class="screen">
+  <!-- print-only header -->
+  <div class="print-header" id="print-header">
+    <h1>طرح جامع ایمنی، بهداشت و محیط زیست (HSE Plan)</h1>
+    <p id="print-meta"></p>
+  </div>
+
+  <div class="result-top">
+    <div class="result-title-wrap">
+      <div class="badge">✅ HSE Plan با موفقیت تولید شد</div>
+      <h1>طرح جامع HSE آماده است</h1>
+    </div>
+    <div class="result-actions">
+      <button class="btn-dl" onclick="printPDF()">🖨️ دانلود / چاپ PDF</button>
+      <button class="btn-restart" onclick="restartApp()">🔄 شروع مجدد</button>
+    </div>
+  </div>
+
+  <div class="result-body">
+    <div class="stats-col" id="stats-col">
+      <!-- injected -->
+    </div>
+    <div class="plan-col">
+      <div class="plan-content" id="plan-output"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════ -->
+<script>
+/* ──────────────────────────────────────────
+   DATA
+────────────────────────────────────────── */
+const QUESTIONS = [
+  // بخش ۱
+  {id:1,sec:"اطلاعات عمومی صنعت",ico:"🏭",
+   q:"نوع صنعت / حوزه فعالیت اصلی سازمان را مشخص کنید:",
+   opts:["پتروشیمی و نفت و گاز","بهداشت و درمان","ساختمان و عمران","معدن و استخراج","صنایع غذایی","گردشگری و هتلداری","چوب و تخته‌های فشرده","فلزسازی و ذوب","شیمیایی و داروسازی","مراکز تجاری و مال"]},
+  {id:2,sec:"اطلاعات عمومی صنعت",ico:"🏭",
+   q:"تعداد نیروی انسانی شاغل در سازمان چقدر است؟",
+   opts:["کمتر از ۱۰ نفر","۱۰ تا ۵۰ نفر","۵۰ تا ۲۰۰ نفر","۲۰۰ تا ۱۰۰۰ نفر","بیش از ۱۰۰۰ نفر"]},
+  {id:3,sec:"اطلاعات عمومی صنعت",ico:"🏭",
+   q:"شیفت‌های کاری سازمان به چه صورت است؟",
+   opts:["تک‌شیفت روزانه","دو شیفت ۱۲ ساعته","سه شیفت ۸ ساعته","شیفت ۲۴ ساعته پیوسته","کار از راه دور / ترکیبی"]},
+  {id:4,sec:"اطلاعات عمومی صنعت",ico:"🏭",
+   q:"محل استقرار فعالیت سازمان کجاست؟",
+   opts:["داخل ساختمان (Indoor)","فضای باز (Outdoor)","زیرزمینی / معدن","آفشور (دریایی)","ترکیبی داخل و خارج"]},
+  {id:5,sec:"اطلاعات عمومی صنعت",ico:"🏭",
+   q:"کدام گواهینامه‌ها و استانداردها در سازمان اجرا می‌شود؟",
+   opts:["ISO 45001","ISO 14001","OHSAS 18001","ISO 9001","OSHA Compliance","NFPA Standards","هیچکدام"]},
+  {id:6,sec:"اطلاعات عمومی صنعت",ico:"🏭",
+   q:"آیا سازمان دارای واحد HSE مستقل است؟",
+   opts:["بله، با تیم کامل و مدیر HSE","بله، با یک نفر مسئول HSE","HSE ترکیب با واحد دیگر است","خیر، HSE اجرا نمی‌شود"]},
+  {id:7,sec:"اطلاعات عمومی صنعت",ico:"🏭",
+   q:"وضعیت سوابق حوادث در ۳ سال اخیر چگونه بوده است؟",
+   opts:["بدون حادثه قابل ثبت","۱ تا ۵ حادثه","۵ تا ۲۰ حادثه","بیش از ۲۰ حادثه","اطلاعاتی ثبت نشده"]},
+  {id:8,sec:"اطلاعات عمومی صنعت",ico:"🏭",
+   q:"آیا پیمانکار و نیروی برون‌سپار در سازمان فعالیت دارد؟",
+   opts:["بله، بیش از ۵۰٪ نیرو پیمانکار","بله، ۱۰ تا ۵۰٪","خیر، تمام نیروها رسمی","بله، به صورت فصلی"]},
+
+  // بخش ۲
+  {id:9,sec:"شناسایی خطرات",ico:"⚠️",
+   q:"کدام خطرات فیزیکی در محیط کار وجود دارد؟",
+   opts:["سروصدای بالا (>85 dB)","ارتعاش دست-بازو","تشعشعات یونیزان","تشعشعات غیریونیزان (UV,IR)","دمای بالا / گرمازدگی","دمای پایین / سرمازدگی","فشار بالا","نور ناکافی"]},
+  {id:10,sec:"شناسایی خطرات",ico:"⚠️",
+   q:"کدام مواد شیمیایی خطرناک در سازمان استفاده می‌شود؟",
+   opts:["حلال‌های آلی (VOC)","مواد اسیدی و قلیایی","گازهای سمی (H2S, CO)","مواد آتش‌زا","مواد سرطان‌زا","مواد جهش‌زا","فلزات سنگین","گازهای فشرده"]},
+  {id:11,sec:"شناسایی خطرات",ico:"⚠️",
+   q:"چه خطرات ارگونومیکی در محل کار وجود دارد؟",
+   opts:["بلند کردن بار سنگین","حرکات تکراری دست","وضعیت بدنی نامناسب","کار طولانی پشت رایانه","فشار تماسی موضعی","ارتعاش تمام‌بدن"]},
+  {id:12,sec:"شناسایی خطرات",ico:"⚠️",
+   q:"کدام خطرات بیولوژیکی در محیط کار مطرح است؟",
+   opts:["ویروس‌ها و باکتری‌ها","قارچ‌ها و کپک‌ها","انگل‌ها و حشرات","ضایعات بیمارستانی","آزبست و فیبرهای مصنوعی","گرد و غبار ارگانیک"]},
+  {id:13,sec:"شناسایی خطرات",ico:"⚠️",
+   q:"خطرات الکتریکی در سازمان شامل کدام موارد است؟",
+   opts:["ولتاژ بالا (HV)","ولتاژ پایین (LV)","صاعقه و اضافه‌ولتاژ","تابلوهای برق قدیمی","کار نزدیک خطوط انتقال","ریسک الکتروستاتیک"]},
+  {id:14,sec:"شناسایی خطرات",ico:"⚠️",
+   q:"خطرات ناشی از ماشین‌آلات و تجهیزات کدام است؟",
+   opts:["اجزای متحرک بدون حفاظ","نقاط گیر (Nip Points)","ابزار دستی معیوب","تجهیزات تحت فشار","جرثقیل و بالابرها","ماشین‌های CNC / اتوماتیک"]},
+  {id:15,sec:"شناسایی خطرات",ico:"⚠️",
+   q:"آیا خطر سقوط از ارتفاع در کارهای سازمان وجود دارد؟",
+   opts:["کار در ارتفاع بالای ۱.۸ متر","کار روی داربست","کار روی بام و سقف","استفاده از نردبان","کار نزدیک لبه‌های باز","فضاهای محدود (Confined Space)"]},
+  {id:16,sec:"شناسایی خطرات",ico:"⚠️",
+   q:"خطرات روانشناختی و استرس شغلی در سازمان چگونه است؟",
+   opts:["بار کاری بالا","کار شیفتی","تهدید و خشونت شغلی","کمبود حمایت مدیریتی","ابهام در نقش شغلی","ریسک فرسودگی شغلی"]},
+
+  // بخش ۳
+  {id:17,sec:"ارزیابی ریسک",ico:"📊",
+   q:"روش ارزیابی ریسک فعلاً در سازمان کدام است؟",
+   opts:["ماتریس ریسک (۵×۵)","روش JSA/JHA","HAZOP","FMEA","روش William Fine","روش LOPA","هیچ روش مدونی نداریم"]},
+  {id:18,sec:"ارزیابی ریسک",ico:"📊",
+   q:"ریسک‌های با سطح بالا (High Risk) در سازمان چه وضعیتی دارند؟",
+   opts:["شناسایی و کنترل کامل","شناسایی شده ولی کنترل ناقص","در حال ارزیابی","هنوز شناسایی نشده‌اند"]},
+  {id:19,sec:"ارزیابی ریسک",ico:"📊",
+   q:"آیا فعالیت‌های غیرمعمول و اضطراری هم ارزیابی ریسک شده‌اند؟",
+   opts:["بله، کاملاً","بله، به صورت جزئی","فقط فعالیت‌های معمول","خیر"]},
+  {id:20,sec:"ارزیابی ریسک",ico:"📊",
+   q:"سلسله‌مراتب کنترل ریسک (Hierarchy of Controls) به چه شکل اجرا می‌شود؟",
+   opts:["حذف (Elimination)","جایگزینی (Substitution)","کنترل مهندسی","کنترل اداری","وسایل حفاظت فردی (PPE)","ترکیبی از موارد فوق"]},
+  {id:21,sec:"ارزیابی ریسک",ico:"📊",
+   q:"مرور و به‌روزرسانی ارزیابی ریسک با چه دوره‌ای انجام می‌شود؟",
+   opts:["هر ۶ ماه یکبار","سالانه","پس از هر حادثه","پس از تغییر فرآیند","هیچ دوره مشخصی ندارد"]},
+  {id:22,sec:"ارزیابی ریسک",ico:"📊",
+   q:"مشارکت کارگران در شناسایی خطر و ارزیابی ریسک چگونه است؟",
+   opts:["مشارکت کامل و مستمر","مشارکت دوره‌ای","فقط در زمان حادثه","بدون مشارکت کارگران"]},
+
+  // بخش ۴
+  {id:23,sec:"ایمنی آتش و اضطرار",ico:"🔥",
+   q:"تجهیزات اطفاء حریق موجود در سازمان کدام است؟",
+   opts:["کپسول آتش‌نشانی پودر ABC","کپسول CO2","سیستم اسپرینکلر خودکار","هیدرانت و شبکه آبرسانی","سیستم Foam برای مواد نفتی","سیستم گاز FM200/Novec"]},
+  {id:24,sec:"ایمنی آتش و اضطرار",ico:"🔥",
+   q:"سیستم اعلام حریق سازمان به چه صورت است؟",
+   opts:["دتکتور دود اتوماتیک","دتکتور حرارتی","کشش دستی (Manual Call Point)","سیستم هوشمند آدرس‌پذیر","بدون سیستم اعلام"]},
+  {id:25,sec:"ایمنی آتش و اضطرار",ico:"🔥",
+   q:"وضعیت مسیرهای فرار و خروجی اضطراری چگونه است؟",
+   opts:["تابلوهای روشن و به‌روز","مسیرهای علامت‌گذاری شده","نورافکن اضطراری","درهای ضد حریق (Fire Door)","مسیرها بلوکه یا ناقص"]},
+  {id:26,sec:"ایمنی آتش و اضطرار",ico:"🔥",
+   q:"برنامه واکنش اضطراری (ERP) شامل چه مواردی است؟",
+   opts:["رویه تخلیه و نقاط تجمع","تیم واکنش اضطراری آموزش‌دیده","ارتباط با خدمات اضطراری","مانور سالانه","رویه اعلام اضطرار","هیچ برنامه‌ای وجود ندارد"]},
+  {id:27,sec:"ایمنی آتش و اضطرار",ico:"🔥",
+   q:"آیا مواد خطرناک با نیاز به رویه ویژه در سازمان وجود دارد؟",
+   opts:["مواد آتش‌زا (Flammable)","مواد منفجره","گازهای سمی","مواد رادیواکتیو","مواد خورنده","هیچ‌کدام"]},
+  {id:28,sec:"ایمنی آتش و اضطرار",ico:"🔥",
+   q:"تجهیزات کمک‌های اولیه در محل کار به چه صورت است؟",
+   opts:["جعبه کمک‌های اولیه کامل","پرسنل آموزش‌دیده CPR/FA","دفیبریلاتور AED","اتاق بهداشت مجهز","نزدیکی به مرکز درمانی","ناقص یا فاقد تجهیزات"]},
+
+  // بخش ۵
+  {id:29,sec:"بهداشت شغلی",ico:"🏥",
+   q:"کدام آزمون‌های سلامت شغلی برای کارگران انجام می‌شود؟",
+   opts:["معاینه بدو استخدام","معاینات دوره‌ای سالانه","آزمون شنوایی (Audiometry)","آزمون ریوی (Spirometry)","آزمون بینایی","آزمون خون / آلودگی","هیچ معاینه‌ای انجام نمی‌شود"]},
+  {id:30,sec:"بهداشت شغلی",ico:"🏥",
+   q:"وضعیت کیفیت هوای داخل محیط کار چگونه است؟",
+   opts:["سیستم تهویه مطبوع مناسب","سیستم مکش موضعی (LEV)","اندازه‌گیری دوره‌ای آلاینده‌ها","تهویه طبیعی کافی","تهویه ناکافی یا معیوب"]},
+  {id:31,sec:"بهداشت شغلی",ico:"🏥",
+   q:"وسایل حفاظت فردی (PPE) موجود در سازمان کدام است؟",
+   opts:["کلاه ایمنی (Hard Hat)","عینک ایمنی","تجهیزات تنفسی (RPE)","دستکش ضدشیمیایی","کفش ایمنی","لباس کار ضدآتش","گوشی ضدصدا","هارنس ایمنی"]},
+  {id:32,sec:"بهداشت شغلی",ico:"🏥",
+   q:"آیا ارزیابی مواجهه شغلی با آلاینده‌ها انجام می‌شود؟",
+   opts:["بله، توسط کارشناس بهداشت حرفه‌ای","بله، به صورت اتفاقی","فقط پس از شکایت کارگران","خیر"]},
+  {id:33,sec:"بهداشت شغلی",ico:"🏥",
+   q:"امکانات رفاهی و بهداشتی برای کارگران شامل چه مواردی است؟",
+   opts:["دوش و رختکن جدا","سرویس بهداشتی کافی","محل استراحت مناسب","آب آشامیدنی سالم","سرویس غذایی بهداشتی","ناکافی یا فاقد امکانات"]},
+  {id:34,sec:"بهداشت شغلی",ico:"🏥",
+   q:"آیا برنامه مدیریت بیماری‌های مرتبط با کار وجود دارد؟",
+   opts:["بازگشت به کار پس از بیماری (RTW)","تطبیق وظایف برای افراد محدود","برنامه واکسیناسیون شغلی","مشاوره روانشناختی","هیچ برنامه‌ای نیست"]},
+
+  // بخش ۶
+  {id:35,sec:"آموزش و فرهنگ ایمنی",ico:"📚",
+   q:"آموزش‌های HSE اعطاشده به کارگران کدام است؟",
+   opts:["توجیه بدو استخدام","آموزش کار ایمن اختصاصی","آموزش آتش‌نشانی و تخلیه","آموزش کمک‌های اولیه","آموزش JSA/PTW","آموزش مواد خطرناک (GHS/SDS)","هیچ آموزشی داده نمی‌شود"]},
+  {id:36,sec:"آموزش و فرهنگ ایمنی",ico:"📚",
+   q:"فرهنگ گزارش‌دهی حوادث و نزدیک‌به‌حادثه چگونه است؟",
+   opts:["سیستم گزارش‌دهی محرمانه فعال","فرهنگ بدون سرزنش (No Blame)","گزارش‌ها بررسی و پیگیری می‌شوند","پاداش برای گزارش‌دهی فعال","کارگران از گزارش دادن می‌ترسند","سیستم گزارش‌دهی وجود ندارد"]},
+  {id:37,sec:"آموزش و فرهنگ ایمنی",ico:"📚",
+   q:"تعهد و رهبری مدیریت در حوزه HSE چگونه است؟",
+   opts:["مدیران بازدید دوره‌ای دارند","اهداف HSE در اهداف سازمانی","جلسات بررسی منظم HSE","بودجه کافی تخصیص داده می‌شود","تعهد فقط مستندسازی است"]},
+  {id:38,sec:"آموزش و فرهنگ ایمنی",ico:"📚",
+   q:"سیستم مجوز کار (Permit to Work) در سازمان چه وضعیتی دارد؟",
+   opts:["PTW کامل برای کارهای خطرناک","فقط برای کارهای داغ (Hot Work)","برای فضای محدود (Confined Space)","برای قفل‌گذاری انرژی (LOTO)","PTW وجود ندارد"]},
+  {id:39,sec:"آموزش و فرهنگ ایمنی",ico:"📚",
+   q:"شاخص‌های عملکرد HSE (KPI) در سازمان کدام است؟",
+   opts:["نرخ حوادث قابل ثبت (TRIR)","روزهای ازکارافتادگی (LTI)","نزدیک‌به‌حادثه‌های گزارش‌شده","ساعات آموزش HSE","بازدیدهای ایمنی انجام‌شده","درصد اقدامات اصلاحی","هیچ KPI تعریف‌نشده"]},
+  {id:40,sec:"آموزش و فرهنگ ایمنی",ico:"📚",
+   q:"ارتباطات HSE در سازمان چگونه انجام می‌شود؟",
+   opts:["جلسات ایمنی (Toolbox Talk)","بولتن و پوسترهای ایمنی","اطلاع‌رسانی دیجیتال / اینترانت","تابلوهای اعلانات ایمنی","ارتباط مستقیم سرپرست","فاقد سیستم ارتباطی مدون"]},
+
+  // بخش ۷
+  {id:41,sec:"محیط زیست و پایداری",ico:"🌿",
+   q:"جنبه‌های زیست‌محیطی قابل‌توجه سازمان کدام است؟",
+   opts:["آلودگی هوا (انتشار گازها)","آلودگی آب (فاضلاب صنعتی)","آلودگی خاک","تولید زباله خطرناک","مصرف زیاد انرژی","مصرف زیاد آب","سروصدای محیطی"]},
+  {id:42,sec:"محیط زیست و پایداری",ico:"🌿",
+   q:"سیستم مدیریت پسماند در سازمان چگونه است؟",
+   opts:["تفکیک پسماند در مبدأ","پسماند خطرناک جداگانه","قرارداد با شرکت مجاز دفع پسماند","کاهش پسماند از منبع","بازیافت فعال","بدون سیستم مدیریت پسماند"]},
+  {id:43,sec:"محیط زیست و پایداری",ico:"🌿",
+   q:"آیا مجوزهای زیست‌محیطی لازم وجود دارد؟",
+   opts:["مجوز بهره‌برداری زیست‌محیطی","پایش دوره‌ای آلاینده‌ها","گزارش‌دهی به سازمان محیط‌زیست","ارزیابی اثر زیست‌محیطی (EIA)","مجوزها ناقص یا منقضی"]},
+  {id:44,sec:"محیط زیست و پایداری",ico:"🌿",
+   q:"برنامه صرفه‌جویی انرژی و منابع چیست؟",
+   opts:["ممیزی انرژی انجام شده","استفاده از انرژی تجدیدپذیر","کاهش مصرف آب","بهینه‌سازی فرآیند تولید","گواهینامه سبز","فاقد برنامه انرژی"]},
+  {id:45,sec:"محیط زیست و پایداری",ico:"🌿",
+   q:"آیا برنامه واکنش اضطراری برای حوادث زیست‌محیطی وجود دارد؟",
+   opts:["رویه کنترل نشت مواد شیمیایی","کیت جمع‌آوری نشت (Spill Kit)","آموزش واکنش نشت","اطلاع‌رسانی به مراجع","فاقد برنامه زیست‌محیطی اضطراری"]},
+
+  // بخش ۸
+  {id:46,sec:"مستندسازی و بهبود مستمر",ico:"📋",
+   q:"وضعیت مستندات سیستم مدیریت HSE چگونه است؟",
+   opts:["خط‌مشی HSE مکتوب و ابلاغ‌شده","رویه‌های اجرایی مدون","دستورالعمل‌های کاری ایمن","فرم‌های ارزیابی ریسک","آرشیو حوادث و بررسی‌ها","مستندات ناقص یا قدیمی"]},
+  {id:47,sec:"مستندسازی و بهبود مستمر",ico:"📋",
+   q:"فرآیند بررسی و تحقیق حادثه شامل چیست؟",
+   opts:["فرم گزارش حادثه استاندارد","تحلیل ریشه‌ای علت (RCA)","اقدامات اصلاحی و پیشگیرانه (CAPA)","گزارش‌دهی به مراجع قانونی","اشتراک‌گذاری درس‌آموخته‌ها","فاقد فرآیند مدون"]},
+  {id:48,sec:"مستندسازی و بهبود مستمر",ico:"📋",
+   q:"ممیزی‌های داخلی و خارجی HSE با چه تناوبی انجام می‌شود؟",
+   opts:["ممیزی داخلی ۶ ماهه","ممیزی داخلی سالانه","ممیزی خارجی توسط مرجع ثالث","بازدید مستمر ایمنی","فاقد برنامه ممیزی"]},
+  {id:49,sec:"مستندسازی و بهبود مستمر",ico:"📋",
+   q:"اهداف و برنامه‌های HSE سالانه چه وضعیتی دارد؟",
+   opts:["اهداف کمّی و قابل اندازه‌گیری","برنامه عملیاتی با مسئول و زمان‌بندی","بودجه تخصیص‌یافته","بررسی دوره‌ای پیشرفت","اهداف تعریف‌نشده"]},
+  {id:50,sec:"مستندسازی و بهبود مستمر",ico:"📋",
+   q:"برنامه بازبینی مدیریت (Management Review) سیستم HSE چگونه است؟",
+   opts:["جلسه بازبینی سالانه مدیریت","بررسی شاخص‌های عملکرد","ورودی از ممیزی‌ها و حوادث","خروجی: اهداف و منابع جدید","فاقد بازبینی مدیریتی"]},
+];
+
+const SECTIONS = [...new Set(QUESTIONS.map(q=>q.sec))];
+
+/* ──────────────────────────────────────────
+   STATE
+────────────────────────────────────────── */
+let state = {
+  industry:'', company:'', user:'',
+  answers:{},        // {qId: [opt,...]}
+  activeSec:0,
+  hsePlan:''
+};
+
+/* ──────────────────────────────────────────
+   SCREEN HELPERS
+────────────────────────────────────────── */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ──────────────────────────────────────────
+   INTRO
+────────────────────────────────────────── */
+['inp-industry','inp-company','inp-user'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', checkIntro);
+});
+function checkIntro(){
+  const ok = document.getElementById('inp-industry').value.trim() &&
+             document.getElementById('inp-company').value.trim() &&
+             document.getElementById('inp-user').value.trim();
+  document.getElementById('btn-go').disabled = !ok;
+}
+function startQuiz(){
+  state.industry = document.getElementById('inp-industry').value.trim();
+  state.company  = document.getElementById('inp-company').value.trim();
+  state.user     = document.getElementById('inp-user').value.trim();
+  document.getElementById('topbar-info').textContent =
+    state.industry + ' — ' + state.company;
+  buildSidebar();
+  renderSection(0);
+  show('quiz');
+}
+
+/* ──────────────────────────────────────────
+   SIDEBAR
+────────────────────────────────────────── */
+function buildSidebar(){
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = '<div class="sidebar-ttl">بخش‌های پرسشنامه</div>';
+  SECTIONS.forEach((sec,i)=>{
+    const qs = QUESTIONS.filter(q=>q.sec===sec);
+    const btn = document.createElement('div');
+    btn.className='sec-btn'+(i===0?' active':'');
+    btn.id='secbtn-'+i;
+    btn.innerHTML=`<span class="sec-ic">${qs[0].ico}</span>
+      <span class="sec-name">${sec}</span>
+      <span class="sec-cnt" id="seccnt-${i}">0/${qs.length}</span>`;
+    btn.onclick=()=>renderSection(i);
+    sb.appendChild(btn);
+  });
+}
+function updateSidebarCounts(){
+  SECTIONS.forEach((sec,i)=>{
+    const qs = QUESTIONS.filter(q=>q.sec===sec);
+    const done = qs.filter(q=>(state.answers[q.id]||[]).length>0).length;
+    const el = document.getElementById('seccnt-'+i);
+    if(el) el.textContent=done+'/'+qs.length;
+  });
+}
+
+/* ──────────────────────────────────────────
+   RENDER SECTION
+────────────────────────────────────────── */
+function renderSection(idx){
+  state.activeSec = idx;
+  // sidebar active
+  document.querySelectorAll('.sec-btn').forEach((b,i)=>{
+    b.classList.toggle('active',i===idx);
+  });
+  const sec = SECTIONS[idx];
+  const qs  = QUESTIONS.filter(q=>q.sec===sec);
+  const panel = document.getElementById('q-panel');
+  let html = `<div class="sec-header">
+    <div class="ico">${qs[0].ico}</div>
+    <div><h2>${sec}</h2><p>${qs.length} سوال در این بخش</p></div>
+  </div>`;
+
+  qs.forEach(q=>{
+    const sel = state.answers[q.id]||[];
+    html += `<div class="q-card${sel.length?'answered':''}" id="qcard-${q.id}">
+      <div class="q-num">سوال ${q.id} از ۵۰</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-hint">✓ می‌توانید چند گزینه انتخاب کنید</div>
+      <div class="opts">`;
+    q.opts.forEach(opt=>{
+      const isSel = sel.includes(opt);
+      html+=`<div class="opt${isSel?' sel':''}" onclick="toggleOpt(${q.id},this,'${opt.replace(/'/g,"\\'")}')">
+        <div class="chk">${isSel?'<span class="chk-tick">✓</span>':''}</div>
+        <span class="opt-lbl">${opt}</span>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+
+  // nav buttons
+  const isLast = idx === SECTIONS.length-1;
+  const answered = Object.keys(state.answers).filter(k=>(state.answers[k]||[]).length>0).length;
+
+  html+=`<div class="nav-row">`;
+  if(idx>0) html+=`<button class="btn-nav" onclick="renderSection(${idx-1})">← بخش قبلی</button>`;
+  if(!isLast){
+    html+=`<button class="btn-gen" onclick="renderSection(${idx+1})">بخش بعدی ←</button>`;
+  } else {
+    html+=`<button class="btn-gen" id="btn-generate"
+      ${answered<10?'disabled':''} onclick="doGenerate()">
+      🤖 تولید HSE Plan با هوش مصنوعی
+    </button>`;
+  }
+  html+=`</div>`;
+  if(isLast && answered<10){
+    html+=`<div class="warn-box">⚠️ برای تولید HSE Plan حداقل ۱۰ سوال را پاسخ دهید (فعلاً: ${answered} سوال)</div>`;
+  }
+  panel.innerHTML = html;
+  panel.scrollTop = 0;
+  updateProgress();
+}
+
+/* ──────────────────────────────────────────
+   TOGGLE OPTION
+────────────────────────────────────────── */
+function toggleOpt(qId, el, opt){
+  if(!state.answers[qId]) state.answers[qId]=[];
+  const arr = state.answers[qId];
+  const i = arr.indexOf(opt);
+  if(i===-1){ arr.push(opt); el.classList.add('sel'); el.querySelector('.chk').innerHTML='<span class="chk-tick">✓</span>'; }
+  else       { arr.splice(i,1); el.classList.remove('sel'); el.querySelector('.chk').innerHTML=''; }
+  // card border
+  const card = document.getElementById('qcard-'+qId);
+  if(card) card.classList.toggle('answered', arr.length>0);
+  updateProgress();
+  updateSidebarCounts();
+  // re-check generate btn
+  const answered = Object.keys(state.answers).filter(k=>(state.answers[k]||[]).length>0).length;
+  const genBtn = document.getElementById('btn-generate');
+  if(genBtn) genBtn.disabled = answered<10;
+}
+
+/* ──────────────────────────────────────────
+   PROGRESS
+────────────────────────────────────────── */
+function updateProgress(){
+  const answered = Object.keys(state.answers).filter(k=>(state.answers[k]||[]).length>0).length;
+  const pct = Math.round(answered/50*100);
+  document.getElementById('prog-label').textContent = answered+'/50';
+  document.getElementById('prog-pct').textContent   = pct+'%';
+  document.getElementById('prog-fill').style.width  = pct+'%';
+}
+
+/* ──────────────────────────────────────────
+   GENERATE — با مدیریت کامل خطا
+────────────────────────────────────────── */
+async function doGenerate(){
+  show('gen');
+  animateSteps();
+
+  const summary = QUESTIONS.map(q=>{
+    const ans = state.answers[q.id]||[];
+    return `سوال ${q.id} [${q.sec}]: ${q.q}\nپاسخ‌ها: ${ans.length?ans.join(' | '):'بدون پاسخ'}`;
+  }).join('\n\n');
+
+  const prompt = `شما یک متخصص ارشد HSE هستید با تخصص کامل در استانداردهای OSHA، NIOSH، NFPA، OGP، ISO 45001 و ISO 14001.
+
+اطلاعات سازمان:
+- نام صنعت: ${state.industry}
+- نام شرکت/سازمان: ${state.company}
+- نام ارزیاب: ${state.user}
+- تاریخ تدوین: ${new Date().toLocaleDateString('fa-IR')}
+
+═══════════════════════════════════════
+نتایج پرسشنامه شناسایی وضعیت HSE (۵۰ سوال):
+═══════════════════════════════════════
+
+${summary}
+
+═══════════════════════════════════════
+درخواست:
+═══════════════════════════════════════
+
+بر اساس پاسخ‌های فوق، یک HSE PLAN جامع، حرفه‌ای و کاربردی به زبان فارسی تدوین کنید که شامل ۲۰ بخش زیر باشد. در هر بخش به پاسخ‌های واقعی پرسشنامه اشاره کنید و توصیه‌های مشخص و اجرایی بدهید:
+
+بخش ۱ — خلاصه اجرایی و معرفی سازمان
+بخش ۲ — خط‌مشی HSE (Policy) مطابق ISO 45001
+بخش ۳ — اهداف کمّی و برنامه‌های سالانه HSE
+بخش ۴ — ساختار سازمانی HSE، نقش‌ها و مسئولیت‌ها
+بخش ۵ — شناسایی خطرات و ارزیابی ریسک (بر اساس پاسخ‌های پرسشنامه)
+بخش ۶ — برنامه کنترل خطرات (Hierarchy of Controls طبق OSHA)
+بخش ۷ — ایمنی آتش، انفجار و مدیریت اضطرار (NFPA 101)
+بخش ۸ — بهداشت شغلی و پزشکی کار (NIOSH / ACGIH)
+بخش ۹ — برنامه آموزش، توانمندسازی و صلاحیت کارکنان
+بخش ۱۰ — مدیریت ایمن پیمانکاران و برون‌سپاری
+بخش ۱۱ — مدیریت محیط زیست (ISO 14001 و OGP)
+بخش ۱۲ — سیستم گزارش‌دهی، بررسی حادثه و RCA
+بخش ۱۳ — برنامه ممیزی داخلی و خارجی HSE
+بخش ۱۴ — مستندسازی، کنترل سوابق و مدیریت دانش
+بخش ۱۵ — شاخص‌های عملکرد HSE (KPI — Leading & Lagging)
+بخش ۱۶ — بازبینی مدیریت و بهبود مستمر
+بخش ۱۷ — الزامات قانونی و مقررات قابل اجرا
+بخش ۱۸ — جدول برنامه اجرایی سالانه (Action Plan)
+بخش ۱۹ — ریسک‌های اولویت‌دار و اقدامات فوری پیشنهادی
+بخش ۲۰ — نتیجه‌گیری، پیوست‌ها و مراجع استاندارد
+
+مهم: این یک سیمولاتور آموزشی برای دانشجویان HSE است. محتوا باید آموزنده، دقیق، استاندارد و قابل استناد باشد.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:8000,
+        messages:[{role:'user', content:prompt}]
+      })
+    });
+
+    // بررسی HTTP status
+    if(!res.ok){
+      let errDetail = `HTTP ${res.status}`;
+      try{
+        const errJson = await res.json();
+        errDetail = errJson?.error?.message || errDetail;
+      }catch(e2){}
+      throw new Error('خطای سرور: ' + errDetail);
+    }
+
+    const data = await res.json();
+
+    // بررسی ساختار پاسخ
+    const text = data?.content?.[0]?.text;
+    if(!text){
+      throw new Error('پاسخ دریافت شد اما محتوا خالی است. لطفاً دوباره تلاش کنید.');
+    }
+
+    state.hsePlan = text;
+    showResult();
+
+  } catch(err){
+    // برگشت به صفحه پرسشنامه با نمایش خطای دقیق
+    show('quiz');
+    renderSection(state.activeSec);
+
+    const panel = document.getElementById('q-panel');
+    const errDiv = document.createElement('div');
+    errDiv.className = 'err-box';
+    errDiv.innerHTML = `
+      <span class="err-icon">⚠️</span>
+      <div class="err-msg">
+        <strong>خطا در تولید HSE Plan:</strong><br>
+        ${err.message}<br>
+        <small style="color:#94a3b8;margin-top:.3rem;display:block">
+          پاسخ‌های شما ذخیره شده‌اند. می‌توانید دوباره تلاش کنید.
+        </small>
+      </div>
+      <button class="btn-retry" onclick="doGenerate()">🔄 تلاش مجدد</button>
+    `;
+    panel.appendChild(errDiv);
+    panel.scrollTop = panel.scrollHeight;
+  }
+}
+
+/* step animation */
+function animateSteps(){
+  const steps = ['st1','st2','st3','st4','st5'];
+  steps.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('done','active');}
+  });
+  let i=0;
+  const iv = setInterval(()=>{
+    if(i>0 && i<=steps.length){
+      const prev=document.getElementById(steps[i-1]);
+      if(prev){prev.classList.remove('active');prev.classList.add('done');}
+    }
+    if(i<steps.length){
+      const cur=document.getElementById(steps[i]);
+      if(cur) cur.classList.add('active');
+      i++;
+    } else { clearInterval(iv); }
+  }, 900);
+}
+
+/* ──────────────────────────────────────────
+   SHOW RESULT
+────────────────────────────────────────── */
+function showResult(){
+  const answered = Object.keys(state.answers).filter(k=>(state.answers[k]||[]).length>0).length;
+  const totalSel = Object.values(state.answers).reduce((a,v)=>a+(v?.length||0),0);
+
+  // stats sidebar
+  const sc = document.getElementById('stats-col');
+  sc.innerHTML=`
+    <div class="stat-card"><div class="stat-num">${answered}</div><div class="stat-lbl">سوال پاسخ داده‌شده</div></div>
+    <div class="stat-card"><div class="stat-num">${totalSel}</div><div class="stat-lbl">گزینه انتخاب‌شده</div></div>
+    <div class="stat-card"><div class="stat-num">20</div><div class="stat-lbl">بخش HSE Plan</div></div>
+    <div class="meta-chip">🏭 <b>${state.industry}</b></div>
+    <div class="meta-chip">🏢 <b>${state.company}</b></div>
+    <div class="meta-chip">👤 <b>${state.user}</b></div>
+    <div class="meta-chip">📅 <b>${new Date().toLocaleDateString('fa-IR')}</b></div>
+  `;
+
+  // plan text
+  document.getElementById('plan-output').textContent = state.hsePlan;
+
+  // print meta
+  document.getElementById('print-meta').textContent =
+    `صنعت: ${state.industry} | شرکت: ${state.company} | ارزیاب: ${state.user} | تاریخ: ${new Date().toLocaleDateString('fa-IR')}`;
+
+  show('result');
+}
+
+/* ──────────────────────────────────────────
+   PRINT TO PDF
+────────────────────────────────────────── */
+function printPDF(){
+  window.print();
+}
+
+/* ──────────────────────────────────────────
+   RESTART
+────────────────────────────────────────── */
+function restartApp(){
+  state = {industry:'',company:'',user:'',answers:{},activeSec:0,hsePlan:''};
+  document.getElementById('inp-industry').value='';
+  document.getElementById('inp-company').value='';
+  document.getElementById('inp-user').value='';
+  document.getElementById('btn-go').disabled=true;
+  show('intro');
+}
+</script>
+</body>
+</html>
